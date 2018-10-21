@@ -1,2 +1,2 @@
-# Matlabcontrol
+# Matlab
 matlab simulation
