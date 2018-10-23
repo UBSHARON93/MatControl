@@ -1,3 +1,5 @@
+%interpolation
+
 A = rand(1,2);
 B = rand(10,2);
 xq1 = -3:.01:3;
