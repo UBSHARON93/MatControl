@@ -44,9 +44,14 @@
 %5. Calculate the curvature and then acquire the steering angle from Equation (1);
  k = (2*sin(requiredheading))/lookaheaddistance; %curvature
  steeringangle = atan(k*L);
+ 
+ 
+%6. Update the vehicle's position till you reach goal point, so this has to be under another loop.
+[statex, statey] = updatestate(X, Y, steeringangle);
+
+ 
  end
 
+ plot(statex,statey,X+1,Y+1);
 
 
-%6. Update the vehicle's position.
-updatestate(X, Y, delta);
