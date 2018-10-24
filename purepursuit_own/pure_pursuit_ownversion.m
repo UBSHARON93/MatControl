@@ -1,6 +1,13 @@
 %1. Find the current location of the vehicle in the global coordinate
 %system (xvehicle, yvehicle) (lat,long)
- path = [50.555744188142 9.679967612028123;
+stateX = 0;
+stateY =0;
+lfc = 1;
+k = 0.1;
+kp = 1;
+L = 2.9; %d b/w frontaxle and rear axle
+dt = 0.1  
+path = [50.555744188142 9.679967612028123;
         50.55580553499353 9.67993810772896;
         50.55583024411951 9.679987728595735;
         50.55584217265845 9.680019915103914;
@@ -36,7 +43,6 @@
  %goalpointy = goalpointy + v*sin(requiredheading)*dt
  %3. Choosing a constant look-ahead distance and thensearch the goal point (Xla,Yla);
  lookaheaddistance = 10;
- L= 10; %d b/w frontaxle and rear axle
  %4. Transform the goal point to vehicle coordinates(xla,yla);
 
     %find the last pont on the path and convert it to UTM
@@ -47,11 +53,12 @@
  
  
 %6. Update the vehicle's position till you reach goal point, so this has to be under another loop.
-[statex, statey] = updatestate(X, Y, steeringangle);
+
+[state.x, state.y, state.v, state.yaw] = updatestate(stateX, stateY, dt, L, steeringangle);
 
  
  end
 
- plot(statex,statey,X+1,Y+1);
-
+[ind] = findMIN(state, X, Y, k, lfc);
+%plot(statex,statey,X+1,Y+1);
 

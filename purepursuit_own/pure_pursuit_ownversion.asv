@@ -1,13 +1,19 @@
 %1. Find the current location of the vehicle in the global coordinate
 %system (xvehicle, yvehicle) (lat,long)
- path = [50.555744188142 9.679967612028123;
+stateX = 0;
+stateY =0;
+lfc = 1;
+kp = 1;
+L = 2.9;
+dt = 0.1  
+path = [50.555744188142 9.679967612028123;
         50.55580553499353 9.67993810772896;
         50.55583024411951 9.679987728595735;
         50.55584217265845 9.680019915103914;
         50.55585836138502 9.6800534427166;
         50.555802126837214 9.680129885673524;
         ];
-    
+   
  %Convert lat,long to UTM, ie local coordinate system
  s = 6;
  for c = 1:s  
@@ -36,16 +42,22 @@
  %goalpointy = goalpointy + v*sin(requiredheading)*dt
  %3. Choosing a constant look-ahead distance and thensearch the goal point (Xla,Yla);
  lookaheaddistance = 10;
- L= 10; %d b/w frontaxle and rear axle
- k = (2*sin(requiredheading))/lookaheaddistance; %curvature
- steeringangle = atan(k*L);
- end
-
-%4. Transform the goal point to vehicle coordinates(xla,yla);
+ %4. Transform the goal point to vehicle coordinates(xla,yla);
 
     %find the last pont on the path and convert it to UTM
 
 %5. Calculate the curvature and then acquire the steering angle from Equation (1);
+ k = (2*sin(requiredheading))/lookaheaddistance; %curvature
+ steeringangle = atan(k*L);
+ 
+ 
+%6. Update the vehicle's position till you reach goal point, so this has to be under another loop.
 
-%6. Update the vehicle's position.
-updatestate(X, Y, delta);
+[state.x, state.y] = updatestate(stateX, stateY, dt, L, steeringangle);
+
+ 
+ end
+
+[ind] = findMIN(state, X, Y);
+%plot(statex,statey,X+1,Y+1);
+
