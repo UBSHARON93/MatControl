@@ -1,6 +1,6 @@
 %1. Find the current location of the vehicle in the global coordinate
 %system (xvehicle, yvehicle) (lat,long)
-
+clc;
 stateX = 0;
 stateY =0;
 state.x =0;
@@ -23,8 +23,8 @@ path = [50.555744188142 9.679967612028123;
         50.555802126837214 9.680129885673524;
         ];
    
- X = zeros(1,6);
- Y = zeros(1,6);
+ X = zeros(1,61);
+ Y = zeros(1,61);
  xvalue = zeros(1,6);
  yvalue = zeros(1,6);
  yawvalue = zeros(1,6);
@@ -40,29 +40,37 @@ path = [50.555744188142 9.679967612028123;
  %fprintf("Zone is %d \n",zone(c));
  end
 
-X = 0:0.1:50;
-Y = sin(X / 5.0);
+X = 0:1:60;
+
+for c = 1:60
+Y(c) = sin(X(c) / 5.0) * X(c) / 2.0;
+end
 
  lastIndex = length(X)-1;
  time = 0;
  
  target_ind = findMIN(state, X, Y, k, lfc);
-
+        
 %2. 2. Find the closest point on the path to the vehicle, (Xcv, Ycv) which is used to locate the vehicle on the path, at which point we can search from it;
 %path(1,1) is lat1 path(1,2) is lon1  lat2 path(2,1) lon2 path(2,2)
  %Loop all points in the path and find the closest point using d = sqrt(x**2+y**2)
  i = 1;
+ figure
+ hold on
  while T >= time && lastIndex > target_ind
         ai = PID(kp,target_speed, state.v);
         %di is delta or steering angle 
         [di, target_ind] = purepursuitcontroller(state, X, Y, target_ind, k, lfc, L);
+        fprintf("%f \n",target_ind);
         state = updatestate(state,dt,L, ai, di);
+        plot(state.x,state.y,'--bs'); drawnow
+        pause(0.2);
         time = time + dt;
-        fprintf("%d %d \n",state.x,state.y);
+        %fprintf("time: %f State X: %f State Y: %f Yaw: %f \n",time*10, state.x, state.y,state.yaw);
         xvalue(i) = state.x;
         yvalue(i) =state.y;
         i = i+1;
  end
 
-plot(X,Y,xvalue,yvalue);
+%plot(X,Y,xvalue,yvalue);
 

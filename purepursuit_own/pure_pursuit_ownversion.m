@@ -55,19 +55,22 @@ end
 %path(1,1) is lat1 path(1,2) is lon1  lat2 path(2,1) lon2 path(2,2)
  %Loop all points in the path and find the closest point using d = sqrt(x**2+y**2)
  i = 1;
+ figure
+ hold on
  while T >= time && lastIndex > target_ind
         ai = PID(kp,target_speed, state.v);
         %di is delta or steering angle 
         [di, target_ind] = purepursuitcontroller(state, X, Y, target_ind, k, lfc, L);
         fprintf("%f \n",target_ind);
         state = updatestate(state,dt,L, ai, di);
+        plot(X, Y, 'g', state.x,state.y,'--bs'); drawnow
+        pause(0.01);
         time = time + dt;
-
         %fprintf("time: %f State X: %f State Y: %f Yaw: %f \n",time*10, state.x, state.y,state.yaw);
         xvalue(i) = state.x;
         yvalue(i) =state.y;
         i = i+1;
  end
 
-plot(X,Y,xvalue,yvalue);
+%plot(X,Y,xvalue,yvalue);
 
