@@ -42,9 +42,7 @@ function [x,y,f]=ll2utm(varargin)
 %	Author: Francois Beauducel, <beauducel@ipgp.fr>
 %	Created: 2003-12-02
 %	Updated: 2015-01-29
-
-
-%	Copyright (c) 2001-2015, François Beauducel, covered by BSD License.
+%	Copyright (c) 2001-2015, Fran?ois Beauducel, covered by BSD License.
 %	All rights reserved.
 %
 %	Redistribution and use in source and binary forms, with or without 
@@ -68,7 +66,6 @@ function [x,y,f]=ll2utm(varargin)
 %	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 %	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 %	POSSIBILITY OF SUCH DAMAGE.
-
 % Available datums
 datums = [ ...
 	{ 'wgs84', 6378137.0, 298.257223563 };
@@ -78,20 +75,16 @@ datums = [ ...
 	{ 'int24', 6378388.0, 297.000000000 };
 	{ 'clk66', 6378206.4, 294.978698214 };
 ];
-
 % constants
 D0 = 180/pi;	% conversion rad to deg
 K0 = 0.9996;	% UTM scale factor
 X0 = 500000;	% UTM false East (m)
-
 % defaults
 datum = 'wgs84';
 zone = [];
-
 if nargin < 1
 	error('Not enough input arguments.')
 end
-
 if nargin > 1 && isnumeric(varargin{1}) && isnumeric(varargin{2}) && all(size(varargin{1})==size(varargin{2}))
 	lat = varargin{1};
 	lon = varargin{2};
@@ -103,11 +96,9 @@ elseif isnumeric(varargin{1}) && size(varargin{1},2) == 2
 else
 	error('Single input argument must be a 2-column matrix [LAT,LON].')
 end
-
 if all([numel(lat),numel(lon)] > 1) && any(size(lat) ~= size(lon))
 	error('LAT and LON must be the same size or scalars.')
 end
-
 for n = (v+1):nargin
 	% LL2UTM(...,DATUM)
 	if ischar(varargin{n}) || (isnumeric(varargin{n}) && numel(varargin{n})==2)
@@ -119,7 +110,6 @@ for n = (v+1):nargin
 		error('Unknown argument #%d. See documentation.',n)
 	end
 end
-
 if ischar(datum)
 	% LL2UTM(...,DATUM) with DATUM as char
 	if ~any(strcmpi(datum,datums(:,1)))
@@ -133,35 +123,29 @@ else
 	A1 = datum(1);
 	F1 = datum(2);
 end
-
 p1 = lat/D0;			% Phi = Latitude (rad)
 l1 = lon/D0;			% Lambda = Longitude (rad)
-
 % UTM zone automatic setting
 if isempty(zone)
 	F0 = round((l1*D0 + 183)/6);
 else
 	F0 = zone;
 end
-
 B1 = A1*(1 - 1/F1);
 E1 = sqrt((A1*A1 - B1*B1)/(A1*A1));
 P0 = 0/D0;
 L0 = (6*F0 - 183)/D0;	% UTM origin longitude (rad)
 Y0 = 1e7*(p1 < 0);		% UTM false northern (m)
 N = K0*A1;
-
 C = coef(E1,0);
 B = C(1)*P0 + C(2)*sin(2*P0) + C(3)*sin(4*P0) + C(4)*sin(6*P0) + C(5)*sin(8*P0);
 YS = Y0 - N*B;
-
 C = coef(E1,2);
 L = log(tan(pi/4 + p1/2).*(((1 - E1*sin(p1))./(1 + E1*sin(p1))).^(E1/2)));
 z = complex(atan(sinh(L)./cos(l1 - L0)),log(tan(pi/4 + asin(sin(l1 - L0)./cosh(L))/2)));
 Z = N.*C(1).*z + N.*(C(2)*sin(2*z) + C(3)*sin(4*z) + C(4)*sin(6*z) + C(5)*sin(8*z));
 xs = imag(Z) + X0;
 ys = real(Z) + YS;
-
 % outputs zone if needed: scalar value if unique, or vector/matrix of the
 % same size as x/y in case of crossed zones
 if nargout > 2
@@ -171,13 +155,46 @@ if nargout > 2
 		f = fu;
 	end
 end
-
 if nargout < 2
 	x = [xs(:),ys(:)];
 else
 	x = xs;
 	y = ys;
 end
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function c = coef(e,m)
+%COEF Projection coefficients
+%	COEF(E,M) returns a vector of 5 coefficients from:
+%		E = first ellipsoid excentricity
+%		M = 0 for transverse mercator
+%		M = 1 for transverse mercator reverse coefficients
+%		M = 2 for merdian arc
+if nargin < 2
+	m = 0;
+end
+switch m
+	case 0
+	c0 = [-175/16384, 0,   -5/256, 0,  -3/64, 0, -1/4, 0, 1;
+           -105/4096, 0, -45/1024, 0,  -3/32, 0, -3/8, 0, 0;
+           525/16384, 0,  45/1024, 0, 15/256, 0,    0, 0, 0;
+          -175/12288, 0, -35/3072, 0,      0, 0,    0, 0, 0;
+          315/131072, 0,        0, 0,      0, 0,    0, 0, 0];
+	  
+	case 1
+	c0 = [-175/16384, 0,   -5/256, 0,  -3/64, 0, -1/4, 0, 1;
+             1/61440, 0,   7/2048, 0,   1/48, 0,  1/8, 0, 0;
+          559/368640, 0,   3/1280, 0,  1/768, 0,    0, 0, 0;
+          283/430080, 0, 17/30720, 0,      0, 0,    0, 0, 0;
+       4397/41287680, 0,        0, 0,      0, 0,    0, 0, 0];
+	case 2
+	c0 = [-175/16384, 0,   -5/256, 0,  -3/64, 0, -1/4, 0, 1;
+         -901/184320, 0,  -9/1024, 0,  -1/96, 0,  1/8, 0, 0;
+         -311/737280, 0,  17/5120, 0, 13/768, 0,    0, 0, 0;
+          899/430080, 0, 61/15360, 0,      0, 0,    0, 0, 0;
+      49561/41287680, 0,        0, 0,      0, 0,    0, 0, 0];
+   
+end
+c = zeros(size(c0,1),1);
+for i = 1:size(c0,1)
+    c(i) = polyval(c0(i,:),e);
+end
