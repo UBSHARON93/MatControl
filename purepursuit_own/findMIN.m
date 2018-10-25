@@ -6,7 +6,7 @@ function [ind] = findMIN(state, X, Y, k, lfc)
 XI = state.x;
 YI = state.y;
 
- for n=1:6
+ for n=1:61
  d(n) = abs(sqrt((X(n)-XI)^2+(Y(n)-YI)^2));
  end
  
